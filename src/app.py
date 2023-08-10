@@ -85,7 +85,16 @@ def login():
 def dashboard():
     if 'email' in session:
         user = users_collection.find_one({'email':session['email']})
-        return get_response('Zalogowano jako ' + user['username'],True,200,{'email':user['email'], 'username':user['username']}) 
+        tasks = tasks_collection.find({'email_author':session['email']},{'_id':0})
+        return get_response(
+            'Zalogowano jako ' + user['username'],
+            True,
+            200,
+            {
+                'email':user['email'], 
+                'username':user['username'],
+                'tasks':list(tasks)
+            }) 
     else:
         return get_response('Odmowa dostępu',False,403)
     
@@ -122,10 +131,6 @@ def create_task():
         if tasks_collection.find_one({'task':task}):
             return get_response('Zadanie o podanej nazwie już istnieje',False,500)
 
-        # # Sprawdzenie emaila za pomocą regular expression
-        # if re.match(email_pattern, email) is None:
-        #     return get_response('Niepoprawny adres email',False,500)
-
         # Dodanie nowego zadania do bazy
         tasks_collection.insert_one({
             'task': task,
@@ -147,7 +152,7 @@ def create_task():
             'urgency':urgency
         }
         return get_response('Utworzono zadanie',True,201,new_task)
-    
+    return get_response('Odmowa dostępu', False, 401)
 # -------------------------------------------------------------------------------------------------
     # Wyświetlanie wszystkich zadań
 @app.route('/get-tasks')
@@ -159,9 +164,9 @@ def get_tasks():
 
 # -------------------------------------------------------------------------------------------------
 # Usuwanie zadania po nazwie tasku
-@app.route('/delete-task')
+@app.route('/delete-task', methods= ['POST'])
 def delete_tasks():
-    if request.method == 'GET':
+    if request.method == 'POST':
         task = request.json['task']
 
     if tasks_collection.find_one({'task':task}):
