@@ -13,6 +13,7 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
+app.debug = True #to automaticly refresh
 
 # umożliwienie dostępu z local host do api
 cors = CORS(app, supports_credentials=True)
