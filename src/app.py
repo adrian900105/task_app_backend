@@ -140,7 +140,8 @@ def create_task():
             'email_author':email_author,
             'email_employee':email_employee,
             'category':category,
-            'urgency':urgency
+            'urgency':urgency,
+            'status': 0
         })
         # Wyświetlenie czegoś po pomyślnym wysłaniu zapytania o zadanie
         new_task = {
@@ -150,7 +151,8 @@ def create_task():
             'email_author':email_author,
             'email_employee':email_employee,
             'category':category,
-            'urgency':urgency
+            'urgency':urgency,
+            'status': 0
         }
         return get_response('Utworzono zadanie',True,201,new_task)
     return get_response('Odmowa dostępu', False, 401)
@@ -176,7 +178,17 @@ def delete_tasks():
     else:
         return get_response('Zadanie o podanym tasku nie istnieje',False,500, task)
  
-    
+
+# ----------------------------------------------------------------------------------------
+# Edycja statusu, metoda po url
+@app.route("/update-task/<name>/<status>",methods=["PUT"])
+def update_task_status(name, status):
+    task = tasks_collection.find({'task':name})
+    if task:
+        tasks_collection.update_one({'task':name}, {'$set':{'status':status}})
+        return get_response('Pomyślnie zaktualizowano', True, 200)
+    else:
+        return get_response('Nie znaleziono zadania', False, 500)
 
     
 
